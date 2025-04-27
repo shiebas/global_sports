@@ -1,0 +1,16 @@
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+db.sqlite3
+/media/
+/static_prod/
+
+# Environment
+.env
+*.env
+venv/
+
+# PythonAnywhere
+.pythonanywhere

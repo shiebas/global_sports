@@ -1,0 +1,15 @@
+{% load static %}
+<h1>Continents</h1>
+<ul>
+{% for continent in continents %}
+    <li>{{ continent.name }} ({{ continent.code }})({{continent.world_body}})
+    ({{continent.sport_code}})({{continent.cont_federation}})({{continent.fedabrev}})({{is_active}})</li>
+{% endfor %}
+</ul>
+
+{% for continent in continents %}
+    {# Optional: Double-check is_active in template #}
+    {% if continent.is_active %}
+        {{ continent.name }} ({{ continent.code }})
+    {% endif %}
+{% endfor %}
