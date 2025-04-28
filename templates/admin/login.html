@@ -1,27 +1,30 @@
-{% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>SAFA Global - Login</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'admin/css/style.css' %}">
-    <link rel="icon" href="{% static 'admin/favicon.ico' %}">
-    </head>
-<body>
-    <div class="login-container">
-        <img src="{% static 'admin/images/logo.png' %}" alt="SAFA Logo" class="login-logo">
+{% extends "admin/base_site.html" %}
 
-        <form method="post" action="{% url 'login' %}">
-            {% csrf_token %}
-            <div class="form-group">
-                <input type="text" name="username" placeholder="Username" required>
-            </div>
-            <div class="form-group">
-                <input type="password" name="password" placeholder="Password" required>
-            </div>
-            <button type="submit" class="login-button">Login</button>
-        </form>
-    </div>
-</body>
-</html>
+{% block content_title %}{% endblock %}  <!-- This removes the default "Log In" heading -->
+
+{% block content %}
+<div style="max-width: 400px; margin: 100px auto; padding: 20px; border: 1px solid #ddd;">
+    {% if form.errors %}
+    <p style="color: red;">Invalid username or password.</p>
+    {% endif %}
+
+    <form method="post" action="/admin/login/">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="/admin/">
+
+        <div style="margin-bottom: 15px;">
+            <label>Username:</label>
+            <input type="text" name="username" required style="width: 100%; padding: 8px;">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label>Password:</label>
+            <input type="password" name="password" required style="width: 100%; padding: 8px;">
+        </div>
+
+        <button type="submit" style="width: 100%; padding: 10px; background: #2c3e50; color: white; border: none;">
+            ACCESS ADMIN PORTAL  <!-- Changed button text -->
+        </button>
+    </form>
+</div>
+{% endblock %}
