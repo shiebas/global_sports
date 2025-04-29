@@ -1,20 +1,24 @@
 import os
+#import sys
 from pathlib import Path
+from datetime import timedelta
+from dotenv import load_dotenv
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Load environment variables
+load_dotenv('/home/NeetieSister/global_sports/.env')
+
+# Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'b%+w_2m9k2*enr^=k8rrwjiot4*te%#o9cs^gs(ay8ozo6l@)@'
+# Security - GET SECRET_KEY FROM ENV OR GENERATE NEW
+SECRET_KEY = os.getenv('SECRET_KEY') or 'django-insecure-' + os.urandom(32).hex()
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-ALLOWED_HOSTS = ['neetiesister.pythonanywhere.com']
+ALLOWED_HOSTS = ['neetiesister.pythonanywhere.com', 'localhost']
 
 AUTH_USER_MODEL = 'geography.User'
 
-# Application definition
-
+# Applications
 INSTALLED_APPS = [
     'geography',
     'django.contrib.admin',
@@ -23,11 +27,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework_simplejwt',
 ]
 
+# Middleware (added security middleware)
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -35,129 +43,113 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'global_sports.urls'
+# Database (with fallback to SQLite if MySQL fails)
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('DB_NAME', 'fallback_db'),
+        'USER': os.getenv('DB_USER', 'root'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': '3306',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'connect_timeout': 5,  # Add timeout
+        }
+    }
+}
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        'APP_DIRS': True,
+        'APP_DIRS': True,  # ← This must be True for admin templates
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'geography.context_processors.country_names',
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'global_sports.wsgi.application'
-PRODUCTION = True
-
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'NeetieSister$global_sports',
-        'USER': 'NeetieSister',
-        'PASSWORD': 'hermia12345',  # From Databases tab
-        'HOST': 'NeetieSister.mysql.pythonanywhere-services.com',
-        'PORT': '3306',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES', innodb_strict_mode=1",
-            'connect_timeout': 10,
-        },
-        'TEST': {
-            'CHARSET': 'utf8mb4',
-            'COLLATION': 'utf8mb4_unicode_ci',
-        },
-    }
-}
-
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-    }
-}
-
-# Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
-
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.1/topics/i18n/
-
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
-USE_I18N = True
-
-USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
-
+# Static files (fixed path handling)
 STATIC_URL = '/static/'
-STATIC_ROOT = '/home/NeetieSister/global_sports/static_prod'  # Absolute path
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
-    '/home/NeetieSister/global_sports/static_src',  # Absolute path
+    os.path.join(BASE_DIR, 'static'),
 ]
-
-# Ensure they don't point to the same directory
-print(f"STATIC_ROOT: {STATIC_ROOT}")  # Should be different from STATICFILES_DIRS
-print(f"STATICFILES_DIRS: {STATICFILES_DIRS}")
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# default static files settings for PythonAnywhere.
-# see https://help.pythonanywhere.com/pages/DjangoStaticFiles for more info
-MEDIA_URL = '/media/'
+ROOT_URLCONF = 'global_sports.urls'
+# Media files
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
-LOGIN_REDIRECT_URL = '/admin/'  # Where to redirect after login
-LOGOUT_REDIRECT_URL = '/login/'  # Where to redirect after logout
-LOGIN_URL = '/login/'  # For login_required decorator
 
-CSRF_COOKIE_SECURE = True # Set to True in production with HTTPS
-CSRF_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = True
-SECURE_HSTS_SECONDS = 30 * 24 * 60 * 60
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SAMESITE = 'Lax'  # Prevents some cross-window issues
+# Authentication
+AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
+LOGIN_URL = '/admin/login/'
+LOGIN_REDIRECT_URL = '/admin/'
+LOGOUT_REDIRECT_URL = '/admin/login/'
+ADMIN_URL = 'admin/'
+
+# REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'admin_api': '100/hour',
+        'user': '1000/day',
+        'anon': '100/day'
+    }
+}
+
+# JWT Configuration
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+}
+
+# Security Headers (for PythonAnywhere)
+if not DEBUG:
+    SECURE_HSTS_SECONDS = 0  # 1 year
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Session Configuration (MUST include all of these)
+SESSION_ENGINE = "django.contrib.sessions.backends.db"  # Default
+SESSION_COOKIE_NAME = "sessionid"
+SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
+SESSION_COOKIE_SECURE = True  # Must match your HTTPS setting
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+# CSRF Configuration
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = False  # Required for admin JS
+CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  # For PythonAnywhere
+CSRF_USE_SESSIONS = False
+CSRF_TRUSTED_ORIGINS = [
+    'https://neetiesister.pythonanywhere.com',
+    'http://neetiesister.pythonanywhere.com'
+]
 
-
-
-# Create directories if they don't exist
+# Create required directories
 os.makedirs(STATIC_ROOT, exist_ok=True)
 os.makedirs(STATICFILES_DIRS[0], exist_ok=True)
+os.makedirs(MEDIA_ROOT, exist_ok=True)
 
-ADMIN_SITE_HEADER = "SAFA Administration"  # Custom header
-
-#DEBUG = True
+# Admin customization
+ADMIN_SITE_HEADER = "SAFA Global Administration"
+ADMIN_SITE_TITLE = "SAFA Global Admin Portal"
+ADMIN_INDEX_TITLE = "Welcome to SAFA Global Management"

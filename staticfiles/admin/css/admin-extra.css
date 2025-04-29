@@ -1,0 +1,77 @@
+
+
+/* Fix for favicon */
+.link-adminimg {
+    background-image: url(../img/favicon.ico) !important;
+}
+
+/* SAFA Branding - Cache Resilient */
+#header {
+    background: #000 !important; /* Black */
+    border-bottom: 4px solid #FFD700 !important; /* Gold */
+}
+
+#branding h1 {
+    color: #FFD700 !important; /* Gold */
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+#branding h1 img {
+    height: 40px;
+    margin-right: 10px;
+}
+/* SAFA Branding Theme */
+:root {
+  --safa-yellow: #FFD700;  /* Gold/Yellow */
+  --safa-black: #000000;   /* Black */
+  --safa-light: #FFF9E6;   /* Light yellow tint */
+}
+
+/* Header */
+#header {
+  background: var(--safa-black) !important;
+  color: white !important;
+  border-bottom: 4px solid var(--safa-yellow) !important;
+}
+
+/* Branding */
+#branding h1 {
+  color: var(--safa-yellow) !important;
+  font-weight: 600 !important;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+}
+
+/* Modules */
+.module caption {
+  background: var(--safa-black) !important;
+  color: var(--safa-yellow) !important;
+  font-weight: bold !important;
+}
+
+/* Buttons */
+.button, input[type=submit], input[type=button] {
+  background: var(--safa-black) !important;
+  color: var(--safa-yellow) !important;
+  border: 1px solid var(--safa-yellow) !important;
+}
+
+.button:hover, input[type=submit]:hover {
+  background: var(--safa-yellow) !important;
+  color: var(--safa-black) !important;
+}
+
+/* Tables */
+#changelist table thead th {
+  background: var(--safa-light) !important;
+  color: var(--safa-black) !important;
+}
+
+/* Login Page */
+.login .submit-row input {
+  background: var(--safa-black) !important;
+  border-color: var(--safa-yellow) !important;
+}
+
+/* Force reload CSS by adding version param */
+<link rel="stylesheet" href="{% static 'admin/css/admin-extra.css' %}?v=1.0">

@@ -1,0 +1,15 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <img src="{% static 'admin/img/logo.png' %}" height="40px" style="vertical-align: middle; margin-right: 10px;">
+        SAFA ADMINISTRATION PORTAL
+    </a>
+</h1>
+{% endblock %}
+
+{% block content_title %}
+<h1>{% if cl.opts.verbose_name_plural == 'countrys' %}Countries{% else %}{{ cl.opts.verbose_name_plural|title }}{% endif %}</h1>
+{% endblock %}
