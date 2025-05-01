@@ -1,67 +1,73 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const PROD_MODE = true;
     const continentSelect = document.getElementById('id_continent');
     const bodySelect = document.getElementById('id_regional_body');
 
     if (!continentSelect || !bodySelect) return;
 
-    // Production-safe URL construction
-    function getEndpoint() {
-        const currentPath = window.location.pathname;
-        const adminBase = currentPath.split('/').slice(0, 3).join('/');
-        return `${adminBase}/regionalbody/get-bodies/`;
+    // Get CSRF token for AJAX requests
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
     }
 
     async function loadBodies() {
         const continentId = continentSelect.value;
         if (!continentId) {
-            bodySelect.innerHTML = '<option value="">Select continent first</option>';
+            updateBodySelect([], 'Select continent first');
             return;
         }
 
+        showLoadingState();
+
         try {
             const response = await fetch(
-                `${getEndpoint()}?continent_id=${continentId}`,
+                '/admin/regionalbody/get-bodies/?continent_id=' + continentId,
                 {
-                    credentials: 'same-origin',
+                    method: 'GET',
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    credentials: 'same-origin'
                 }
             );
 
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 
             const bodies = await response.json();
-
-            // Preserve current selection
-            const currentValue = bodySelect.value;
-            bodySelect.innerHTML = '';
-
-            // Add default option
-            const defaultOption = new Option('---------', '');
-            bodySelect.add(defaultOption);
-
-            // Add retrieved options
-            bodies.forEach(body => {
-                const option = new Option(body.name, body.id);
-                bodySelect.add(option);
-                if (body.id == currentValue) {
-                    bodySelect.value = currentValue;
-                }
-            });
+            updateBodySelect(bodies, '---------');
 
         } catch (error) {
-            if (PROD_MODE) {
-                console.error('Failed to load regional bodies');
-                bodySelect.innerHTML = '<option value="">Service unavailable</option>';
-            } else {
-                throw error;
-            }
+            console.error('Failed to load regional bodies:', error);
+            updateBodySelect([], 'Service unavailable');
         }
+    }
+
+    function showLoadingState() {
+        bodySelect.innerHTML = '<option value="">Loading...</option>';
+        bodySelect.disabled = true;
+    }
+
+    function updateBodySelect(bodies, defaultText) {
+        const currentValue = bodySelect.value;
+        let options = `<option value="">${defaultText}</option>`;
+
+        bodies.forEach(body => {
+            const selected = body.id == currentValue ? ' selected' : '';
+            options += `<option value="${body.id}"${selected}>${body.name} (${body.code})</option>`;
+        });
+
+        bodySelect.innerHTML = options;
+        bodySelect.disabled = false;
     }
 
     // Initialize
     continentSelect.addEventListener('change', loadBodies);
-    if (continentSelect.value) loadBodies();
+
+    // Load immediately if value exists
+    if (continentSelect.value) {
+        loadBodies();
+    }
 });

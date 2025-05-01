@@ -1,12 +1,15 @@
 from django.contrib import admin
 from django.templatetags.static import static
-from .models import Continent, Country, RegionalBody
+from .models import Continent, Country, RegionalBody, User
 from django.utils.html import format_html
 from django import forms
 from django.http import JsonResponse
 from django.urls import path
 from django.views.decorators.csrf import csrf_exempt
 import logging
+from django.contrib.auth.admin import UserAdmin
+
+##from django.contrib.admin import ModelAdmin
 
 # Get logger instance
 logger = logging.getLogger(__name__)
@@ -64,6 +67,13 @@ def get_bodies(self, request):
 
         return JsonResponse(list(bodies), safe=False)
 
+class CustomUserAdmin(UserAdmin):
+    list_display = ('username', 'email', 'is_staff')
+    search_fields = ('username', 'email')
+
+
+
+
 class ContinentAdmin(admin.ModelAdmin):
     list_display = ('name', 'code', 'world_body', 'cont_federation', 'is_active')
     list_filter = ('is_active',)
@@ -74,8 +84,11 @@ class ContinentAdmin(admin.ModelAdmin):
 class CountryAdmin(admin.ModelAdmin):
     list_display = ('name', 'code', 'continent', 'regional_body', 'display_flag')
     readonly_fields = ('display_flag',)
-    list_filter = ('continent',)
+    list_filter = ('continent', 'regional_body')
     search_fields = ('name', 'code')
+
+    class Media:
+        js = ('js/country_admin.js',)
 
     def country_body_display(self, obj):
         return obj.country_body
@@ -101,4 +114,4 @@ class CountryAdmin(admin.ModelAdmin):
 
 admin.site.register(Continent, ContinentAdmin)
 admin.site.register(Country, CountryAdmin)
-admin.site.register(RegionalBody)
+admin.site.register(User, CustomUserAdmin)

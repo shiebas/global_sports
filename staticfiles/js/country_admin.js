@@ -4,9 +4,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!continentSelect || !bodySelect) return;
 
-    // Get CSRF token for AJAX requests
-    function getCSRFToken() {
-        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    // Get the correct endpoint URL
+    function getEndpoint() {
+        // Check if we're in admin
+        if (window.location.pathname.includes('/admin/')) {
+            return '/admin/geography/get-bodies/';
+        }
+        return '/api/regional-bodies/';
     }
 
     async function loadBodies() {
@@ -20,15 +24,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const response = await fetch(
-                '/admin/regionalbody/get-bodies/?continent_id=' + continentId,
+                `${getEndpoint()}?continent_id=${continentId}`,
                 {
-                    method: 'GET',
                     headers: {
                         'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRFToken': getCSRFToken()
-                    },
-                    credentials: 'same-origin'
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
                 }
             );
 
@@ -56,7 +57,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         bodies.forEach(body => {
             const selected = body.id == currentValue ? ' selected' : '';
-            options += `<option value="${body.id}"${selected}>${body.name} (${body.code})</option>`;
+            const displayText = body.code ? `${body.name} (${body.code})` : body.name;
+            options += `<option value="${body.id}"${selected}>${displayText}</option>`;
         });
 
         bodySelect.innerHTML = options;

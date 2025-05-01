@@ -13,23 +13,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Security - GET SECRET_KEY FROM ENV OR GENERATE NEW
 SECRET_KEY = os.getenv('SECRET_KEY') or 'django-insecure-' + os.urandom(32).hex()
 
-DEBUG = False
-ALLOWED_HOSTS = ['neetiesister.pythonanywhere.com', 'localhost']
+DEBUG = True
 
-AUTH_USER_MODEL = 'geography.User'
+ALLOWED_HOSTS = ['neetiesister.pythonanywhere.com', 'localhost']
 
 # Applications
 INSTALLED_APPS = [
-    'geography',
-    'django.contrib.admin',
+    'geography.apps.GeographyConfig',
     'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django.contrib.admin',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
 ]
+
+AUTH_USER_MODEL = 'geography.User'
 
 # Middleware (added security middleware)
 MIDDLEWARE = [
@@ -119,9 +120,11 @@ SIMPLE_JWT = {
 
 # Security Headers (for PythonAnywhere)
 if not DEBUG:
-    SECURE_HSTS_SECONDS = 0  # 1 year
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
 # Session Configuration (MUST include all of these)
 SESSION_ENGINE = "django.contrib.sessions.backends.db"  # Default
@@ -153,3 +156,6 @@ os.makedirs(MEDIA_ROOT, exist_ok=True)
 ADMIN_SITE_HEADER = "SAFA Global Administration"
 ADMIN_SITE_TITLE = "SAFA Global Admin Portal"
 ADMIN_INDEX_TITLE = "Welcome to SAFA Global Management"
+
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

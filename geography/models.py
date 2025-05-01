@@ -8,6 +8,7 @@ class User(AbstractUser):
         permissions = [('manage_geography', 'Can manage geographic data')]
 
 class Continent(models.Model):
+    id = models.BigAutoField(primary_key=True)
     name = models.CharField("Continent", max_length=100, unique=True)
     code = models.CharField("ISO Code", max_length=2, unique=True)  # e.g. 'AF' for Africa
     world_body = models.CharField("World Body", max_length=100, blank=True, null=True)  # New field
